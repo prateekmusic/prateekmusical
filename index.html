@@ -111,11 +111,33 @@
           <div style="margin-top:18px;color:var(--muted);font-size:13px">Pro tip: Use the <strong>Book Me</strong> button to contact me quickly on WhatsApp or Email.</div>
         </div>
 
-        <aside class="hero-right">
-          <!-- Replace background-image URL with your portrait performance photo -->
-          <div class="video-embed">
-			<iframe src="https://www.instagram.com/reel/DOEbvqXjbPQ" allowfullscreen></iframe>
-		  </div>	
+		<aside class="hero-right">
+		  <!-- Instagram embed (official) -->
+		  <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/reel/DOEbvqXjbPQ/" data-instgrm-version="14" style="width:100%;margin:0">
+			<a href="https://www.instagram.com/reel/DOEbvqXjbPQ/" target="_blank" rel="noopener noreferrer">Watch my Instagram reel</a>
+		  </blockquote>
+
+		  <!-- Fallback thumbnail/link (in case embed fails) -->
+		  <div style="margin-top:10px;text-align:center">
+			<a href="https://www.instagram.com/reel/DOEbvqXjbPQ/" target="_blank" rel="noopener noreferrer" class="btn">Open Reel on Instagram</a>
+		  </div>
+
+		  <div class="meta">
+			<div>
+			  <div style="font-weight:700">Live Showreel</div>
+			  <div class="small">Best reel performance • Instagram</div>
+			</div>
+			<div style="margin-left:auto;text-align:right">
+			  <div style="font-size:12px;color:var(--muted)">Based in</div>
+			  <div style="font-weight:700">Pune</div>
+			</div>
+		  </div>
+		</aside>
+
+		<!-- Include embed script once (put once near page bottom if not already present) -->
+		<script async src="https://www.instagram.com/embed.js"></script>
+
+	
 
           <div class="meta">
             <div>
@@ -162,7 +184,10 @@
           <div class="card">
             <div class="video">
               <!-- Replace the video ID below with your YouTube demo video ID -->
-              <iframe src="https://youtu.be/SKFkMF15bgI" title="Demo 1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+				<iframe src="https://www.youtube.com/embed/SKFkMF15bgI" title="Demo 1"
+				  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+				  allowfullscreen></iframe>
+
             </div>
             <div style="margin-top:12px;color:var(--muted)">2-min Showreel — Best performance highlights.</div>
           </div>
@@ -170,7 +195,7 @@
           <div class="card">
             <div class="video">
               <!-- Replace the video ID below with another YouTube demo video ID -->
-              <iframe src="https://youtube.com/shorts/u4ZfgcpGfww?feature=share" title="Demo 2" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+				<iframe src="https://www.youtube.com/embed/u4ZfgcpGfww?autoplay=0" title="Demo 2" allowfullscreen></iframe>
             </div>
             <div style="margin-top:12px;color:var(--muted)">Full live cover — audience-friendly set example.</div>
           </div>
@@ -302,45 +327,102 @@
     }
   </script>
 	  <!-- EmailJS CDN -->
-	<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-	<script>
-	  (function(){
-		// Replace with your EmailJS public key
-		emailjs.init('7dqzko5__CE0oEmbo'); // e.g. 'user_xxx' or 'publicKey_xxx'
-	  })();
+<!-- EMAILJS - owner notify + autoreply (replace IDs with your actual ones) -->
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script>
+  // ===== CONFIG - replace these with your exact EmailJS values =====
+  const EMAILJS_PUBLIC_KEY = '7dqzko5__CE0oEmbo';   // from EmailJS dashboard (publicKey / user_xxx)
+  const EMAILJS_SERVICE_ID = 'service_vi4kvma';     // from EmailJS dashboard
 
-	  // Replace with your service ID and template ID from EmailJS
-	  const EMAILJS_SERVICE_ID = 'service_vi4kvma';
-	  const EMAILJS_TEMPLATE_ID = 'template_9perajf';
+  // NEW: two templates
+  const EMAILJS_TEMPLATE_OWNER = 'template_7cq24oc';   // <-- replace with the Owner Notification template ID you created
+  const EMAILJS_TEMPLATE_REPLY = 'template_9perajf';      // <-- replace with your existing Auto-reply template ID
 
-	  async function sendContactEmailJS(e){
-		e.preventDefault();
-		const name = document.getElementById('name').value.trim();
-		const email = document.getElementById('email').value.trim();
-		const msg = document.getElementById('msg').value.trim();
+  const RECEIVER_EMAIL = 'chawdaprateekmusic@gmail.com'; // used only for mailto fallback
+  // =================================================================
 
-		if(!name || !email || !msg){
-		  alert('Please fill all required fields.');
-		  return;
-		}
+  // initialize EmailJS
+  try {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+    console.log('[EmailJS] init OK');
+  } catch (e) {
+    console.error('[EmailJS] init failed', e);
+  }
 
-		const templateParams = {
-		  user_name: name,
-		  user_email: email,
-		  message: msg
-		};
+  // helper fallback (mailto)
+  function sendViaMailto(name, email, msg) {
+    const subject = `Booking request from ${name}`;
+    const body = `Name: ${encodeURIComponent(name)}%0D%0AEmail: ${encodeURIComponent(email)}%0D%0A%0D%0AMessage:%0D%0A${encodeURIComponent(msg)}`;
+    window.location.href = `mailto:${RECEIVER_EMAIL}?subject=${subject}&body=${body}`;
+  }
 
-		try{
-		  const resp = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
-		  // resp.status === 200 on success
-		  alert('Message sent — thank you! I will reply soon.');
-		  document.getElementById('contactForm').reset();
-		}catch(err){
-		  console.error('EmailJS error:', err);
-		  alert('Sorry, something went wrong — please try again or message on WhatsApp.');
-		}
-	  }
-	</script>
+  // Main form submission handler - sends owner notify first, then auto-reply
+  async function sendContactEmailJS(e) {
+    e.preventDefault();
+
+    if (location.protocol === 'file:') {
+      console.warn('[EmailJS] You opened the file locally via file:// — EmailJS may fail. Serve the file via HTTP(S) or use Netlify/GitHub Pages for testing.');
+    }
+
+    const name = (document.getElementById('name') || {}).value?.trim() || '';
+    const email = (document.getElementById('email') || {}).value?.trim() || '';
+    const msg = (document.getElementById('msg') || {}).value?.trim() || '';
+
+    if (!name || !email || !msg) {
+      alert('Please fill all required fields.');
+      return;
+    }
+
+    // NOTE: keys MUST match placeholders in your EmailJS templates.
+    // Your template uses {{name}}, {{email}} and {{message}} — so we pass exactly those keys.
+    const templateParams = {
+      name: name,
+      email: email,
+      message: msg
+    };
+
+    console.log('[EmailJS] sending owner notify with params:', templateParams);
+
+    try {
+      // 1) send owner notification (to you)
+      const respOwner = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_OWNER, templateParams, EMAILJS_PUBLIC_KEY);
+      console.log('[EmailJS] owner notify sent', respOwner);
+
+      // 2) send auto-reply to the user
+      console.log('[EmailJS] sending auto-reply to visitor');
+      const respReply = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_REPLY, templateParams, EMAILJS_PUBLIC_KEY);
+      console.log('[EmailJS] autoreply sent', respReply);
+
+      alert('Message received — I will reply soon. Thanks!');
+      document.getElementById('contactForm').reset();
+    } catch (err) {
+      console.error('[EmailJS] send error', err);
+      // Try to surface a meaningful message if possible
+      let errText = 'Unknown error';
+      try {
+        if (err && (err.text || err.message)) errText = err.text || err.message;
+        else if (err && err.status) errText = `status ${err.status}`;
+      } catch (_) {}
+      alert(`Sorry, something went wrong while sending the message: ${errText}\n\nWe will open your email client as a fallback.`);
+
+      // fallback to mailto so the message still reaches you
+      sendViaMailto(name, email, msg);
+    }
+  }
+
+  // keep a console-test helper
+  window._testEmailJS = function() {
+    const p = { name: 'Test User', email: 'test@example.com', message: 'This is a test' };
+    console.log('[EmailJS] manual test', p);
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_OWNER, p, EMAILJS_PUBLIC_KEY)
+      .then(res => {
+        console.log('[EmailJS] manual owner test success', res);
+        return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_REPLY, p, EMAILJS_PUBLIC_KEY);
+      })
+      .then(res2 => console.log('[EmailJS] manual reply test success', res2))
+      .catch(err => console.error('[EmailJS] manual test error', err));
+  };
+</script>
 
 </body>
 </html>
